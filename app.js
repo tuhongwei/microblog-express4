@@ -90,6 +90,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(session({
 	secret: settings.cookieSecret,
+  resave: false,
+  saveUninitialized: true,
 	store: new MongoStore({
 		db: settings.db,
 		url: settings.url
@@ -152,4 +154,4 @@ app.use(function(err, req, res, next) {
 
 
 module.exports = app;
-console.log(process.env.PORT);
+// console.log(process.env.PORT);
