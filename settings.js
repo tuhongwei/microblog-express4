@@ -2,5 +2,5 @@ module.exports = {
 	cookieSecret: "microblogtwittytop",
 	db: "microblog",
 	host: "localhost",
-	url: 'mongodb://localhost/microblog'
+	url: 'mongodb://localhost:27017'
 };

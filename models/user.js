@@ -1,4 +1,5 @@
-var mongodb = require('./db');
+var mongoClient = require('./mongoClient');
+var settings = require('../settings');
 function User(user){
 	this.name = user.name;
 	this.password = user.password;
@@ -6,48 +7,46 @@ function User(user){
 module.exports = User;
 
 User.prototype.save = function(callback){
-	var user = {
+	var newUser = {
 		name: this.name,
 		password: this.password
 	};
-	mongodb.open(function(err,db){
+	mongoClient.connect(async function(err,client){
 		if(err){
 			return callback(err);
 		}
-		db.collection('users',function(err,collection){
-			if(err){
-				mongodb.close();
-				return callback(err);
-			}
+		const db = client.db(settings.db)
+		try {
+			const collection = await db.collection('users')
 			//为name属性添加索引
-			collection.ensureIndex('name',{unique: true});
-			collection.insert(user,{safe: true},function(err,user){
-				mongodb.close();
-				callback(err,user);
-			});
-		});
-	});	
+			await collection.createIndex('name',{unique: true});
+			const user = await collection.insertOne(newUser,{safe: true})
+			callback(null,user);
+		} catch (err) {
+			mongoClient.close();
+			return callback(err);
+		}
+	});
 };
 
 User.get = function(username,callback){
-	mongodb.open(function(err,db){
+	mongoClient.connect(async function(err,client){
 		if(err){
 			return callback(err);
 		}
-		db.collection('users',function(err,collection){
-			if(err){
-				mongodb.close();
-				return callback(err);
+		const db = client.db(settings.db)
+		try {
+			const collection = await db.collection('users')
+			const doc = await collection.findOne({name: username})
+			if(doc){
+				var user = new User(doc);
+				callback(null,user);
+			}else{
+				callback(err,null);
 			}
-			collection.findOne({name: username},function(err,doc){
-				mongodb.close();
-				if(doc){
-					var user = new User(doc);
-					callback(err,user);
-				}else{
-					callback(err,null);
-				}
-			});
-		});
+		} catch (err) {
+			mongoClient.close();
+			return callback(err);
+		}
 	});	
 };

@@ -14,6 +14,7 @@ router.get('',function(req,res,next){
 });
 router.post('',check.checkNotLogin);
 router.post('',function(req,res,next){
+	console.log(req.body, 111)
 	if(req.body['password-repeat']!=req.body['password']){
 		req.flash('error','两次输入的口令不一致');
 		return res.redirect('/reg');
@@ -29,6 +30,7 @@ router.post('',function(req,res,next){
 			if(user){
 				err = 'username already exits.';
 			}
+			console.log('error', err)
 			if(err){
 				req.flash('error',err);
 				return res.redirect('/reg');
